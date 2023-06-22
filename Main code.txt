@@ -1,0 +1,158 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class EnglishToFrenchTranslator {
+    public static void main(String[] args) {
+        String findWordsFilePath = "find_words.txt";
+        String shakespeareTextFilePath = "t8.shakespeare.txt";
+        String dictionaryFilePath = "french_dictionary.csv";
+
+        // Read find_words.txt
+        List<String> findWordsList = readWordsFromFile(findWordsFilePath);
+
+        // Read t8.shakespeare.txt
+        String shakespeareText = readFileContent(shakespeareTextFilePath);
+
+        // Read dictionary.csv
+        Map<String, String> dictionary = readDictionaryFromFile(dictionaryFilePath);
+
+        // Translate words in shakespeareText to French
+        String translatedText = translateText(shakespeareText, findWordsList, dictionary);
+
+        // Write translated text to t8.shakespeare.translated.txt
+        writeToFile("t8.shakespeare.translated.txt", translatedText);
+
+        // Create frequency.csv
+        createFrequencyCSV(findWordsList, dictionary);
+
+        // Create performance.txt
+        createPerformanceFile();
+    }
+
+    private static List<String> readWordsFromFile(String filePath) {
+        List<String> wordsList = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                wordsList.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return wordsList;
+    }
+
+    private static String readFileContent(String filePath) {
+        StringBuilder content = new StringBuilder();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return content.toString();
+    }
+
+    private static Map<String, String> readDictionaryFromFile(String filePath) {
+        Map<String, String> dictionary = new HashMap<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 2) {
+                    dictionary.put(parts[0], parts[1]);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return dictionary;
+    }
+
+    private static String translateText(String text, List<String> wordsList, Map<String, String> dictionary) {
+        String[] words = text.split("\\s+");
+        StringBuilder translatedText = new StringBuilder();
+
+        for (String word : words) {
+            String translatedWord = dictionary.getOrDefault(word.toLowerCase(), word);
+            translatedText.append(translatedWord).append(" ");
+        }
+
+        return translatedText.toString();
+    }
+
+    private static void writeToFile(String filePath, String content) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            writer.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void createFrequencyCSV(List<String> findWordsList, Map<String, String> dictionary) {
+        List<String[]> rows = new ArrayList<>();
+
+        for (String word : findWordsList) {
+            String translatedWord = dictionary.getOrDefault(word, "");
+            int frequency = getFrequencyInText(word);
+            rows.add(new String[]{word, translatedWord, String.valueOf(frequency)});
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("frequency.csv"))) {
+              writer.write("English Word,French Word,Frequency\n");
+
+            // Write rows
+            for (String[] row : rows) {
+                writer.write(String.join(",", row));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static int getFrequencyInText(String word) {
+        // Implement your logic to count the frequency of a word in the text
+        // This is just a placeholder method
+        return 0;
+    }
+
+    private static void createPerformanceFile() {
+        long startTime = System.currentTimeMillis();
+
+        // Perform your tasks here
+
+        long endTime = System.currentTimeMillis();
+        long timeTaken = endTime - startTime;
+        double memoryUsed = getMemoryUsed();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("performance.txt"))) {
+            writer.write("Time to process: " + timeTaken + " milliseconds");
+            writer.newLine();
+            writer.write("Memory used: " + memoryUsed + " MB");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static double getMemoryUsed() {
+        // Implement your logic to calculate memory used
+        // This is just a placeholder method
+        return 0.0;
+    }
+}
